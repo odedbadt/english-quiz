@@ -49,10 +49,23 @@ Progress (mastery levels, totals, enabled question types) is saved to
 
 Answer with the mouse or with <kbd>1</kbd>–<kbd>4</kbd>; <kbd>Enter</kbd> moves on.
 
+## Installing it as an app
+
+`manifest.webmanifest` + `sw.js` make it installable: "Add to Home Screen" on
+iOS/Android gives a standalone window with the Georgia `a` icon, and the service
+worker caches the shell so it runs with no network. Icons are generated from
+`/System/Library/Fonts/Supplemental/Georgia.ttf` — see the icon sizes in
+`icons/`; regenerate them if the artwork changes.
+
+Service workers need HTTPS (GitHub Pages provides it) or `localhost`.
+
 ## Layout
 
 ```
 index.html            RTL markup and the controls
+manifest.webmanifest  app name, colors, icons
+sw.js                 offline cache (serve from cache, refresh in background)
+icons/                favicons + 180/192/512 app icons, incl. a maskable one
 css/style.css         light/dark theme, RTL-aware spacing
 js/data-vocab.js      75 Hebrew↔English words, grouped for distractors
 js/data-spelling.js   50 English spelling items with hints
