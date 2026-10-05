@@ -1,0 +1,269 @@
+:root {
+  --paper: #f7f3ec;
+  --card: #ffffff;
+  --ink: #1f2430;
+  --ink-soft: #5d6578;
+  --line: #e2dbd0;
+  --accent: #0f766e;
+  --accent-soft: #d7efec;
+  --right: #157f4a;
+  --right-soft: #dcf3e6;
+  --wrong: #b3261e;
+  --wrong-soft: #fae3e1;
+  --shadow: 0 1px 2px rgba(31, 36, 48, .06), 0 12px 32px -18px rgba(31, 36, 48, .35);
+  --radius: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #15181f;
+    --card: #1d212b;
+    --ink: #eef1f6;
+    --ink-soft: #9ba4b7;
+    --line: #2e3442;
+    --accent: #5eead4;
+    --accent-soft: #1b3b39;
+    --right: #6ee7a8;
+    --right-soft: #16331f;
+    --wrong: #fca5a0;
+    --wrong-soft: #3a1c1b;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 16px 40px -20px rgba(0, 0, 0, .8);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 2rem 1.25rem 3rem;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Heebo", -apple-system, "Arial Hebrew", "Segoe UI", sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app { max-width: 42rem; margin: 0 auto; }
+
+/* ---------- כותרת וסטטיסטיקה ---------- */
+.brand {
+  font-family: "Frank Ruhl Libre", "Heebo", serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  letter-spacing: -.01em;
+}
+.brand span { color: var(--accent); font-weight: 500; }
+
+.stats {
+  display: flex;
+  gap: 1.75rem;
+  margin: 0;
+  padding: 0;
+}
+.stats dt {
+  font-size: .72rem;
+  letter-spacing: .04em;
+  color: var(--ink-soft);
+  text-transform: none;
+}
+.stats dd {
+  margin: .1rem 0 0;
+  font-size: 1.3rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.mastery-bar {
+  margin: .85rem 0 1.5rem;
+  height: 5px;
+  border-radius: 99px;
+  background: var(--line);
+  overflow: hidden;
+}
+.mastery-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width .45s cubic-bezier(.2, .7, .3, 1);
+}
+
+/* ---------- כרטיס השאלה ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.6rem 1.5rem 1.4rem;
+}
+
+.kicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 .6rem;
+  font-size: .78rem;
+  color: var(--ink-soft);
+}
+
+.pips { display: inline-flex; gap: 4px; }
+.pips i {
+  width: 6px; height: 6px; border-radius: 99px;
+  background: var(--line);
+  display: block;
+}
+.pips i.on { background: var(--accent); }
+
+.prompt {
+  font-family: "Frank Ruhl Libre", "Heebo", serif;
+  font-size: 1.75rem;
+  font-weight: 500;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.gloss { margin: .55rem 0 0; color: var(--ink-soft); }
+
+.lat {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+.note .lat { color: var(--accent); }
+.note {
+  margin: .7rem 0 0;
+  padding: .55rem .75rem;
+  border-inline-start: 3px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--ink);
+  border-radius: 8px;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  font-size: .92rem;
+}
+
+/* ---------- תשובות ---------- */
+.options {
+  display: grid;
+  gap: .55rem;
+  margin: 1.25rem 0 0;
+}
+.option {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  text-align: start;
+  font: inherit;
+  font-size: 1.12rem;
+  color: inherit;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: .7rem .85rem;
+  cursor: pointer;
+  transition: border-color .12s, background .12s, transform .12s;
+}
+.option:hover:not(:disabled) { border-color: var(--accent); transform: translateX(-2px); }
+.option:disabled { cursor: default; }
+.option .num {
+  flex: 0 0 1.45rem;
+  height: 1.45rem;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  font-size: .78rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.option .txt { flex: 1; }
+.option[data-dir="ltr"] .txt { direction: ltr; text-align: left; unicode-bidi: isolate; }
+
+.option.is-right { border-color: var(--right); background: var(--right-soft); }
+.option.is-right .num { border-color: var(--right); color: var(--right); }
+.option.is-wrong { border-color: var(--wrong); background: var(--wrong-soft); }
+.option.is-wrong .num { border-color: var(--wrong); color: var(--wrong); }
+.option.is-dim { opacity: .5; }
+
+.pattern {
+  direction: ltr;
+  text-align: left;
+  margin: .7rem 0 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  color: var(--accent);
+}
+
+.feedback { margin: 1rem 0 0; font-weight: 500; }
+.feedback.ok { color: var(--right); }
+.feedback.no { color: var(--wrong); }
+.feedback b { font-weight: 700; }
+
+.next {
+  margin: 1.1rem 0 0;
+  font: inherit;
+  font-weight: 500;
+  background: var(--accent);
+  color: var(--paper);
+  border: 0;
+  border-radius: 10px;
+  padding: .6rem 1.1rem;
+  cursor: pointer;
+}
+@media (prefers-color-scheme: dark) { .next { color: #10211f; } }
+.next:hover { filter: brightness(1.07); }
+
+/* ---------- בקרות ---------- */
+.controls { margin-top: 1.5rem; }
+.modes {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: .6rem .9rem .85rem;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem 1.25rem;
+}
+.modes legend { font-size: .75rem; color: var(--ink-soft); padding: 0 .3rem; }
+.modes label { display: inline-flex; align-items: center; gap: .4rem; font-size: .95rem; }
+.modes input { accent-color: var(--accent); width: 1rem; height: 1rem; }
+
+.reset {
+  margin-top: .9rem;
+  font: inherit;
+  font-size: .88rem;
+  color: var(--ink-soft);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: .4rem .8rem;
+  cursor: pointer;
+}
+.reset:hover { color: var(--wrong); border-color: var(--wrong); }
+
+.tip { font-size: .82rem; color: var(--ink-soft); margin: .9rem 0 0; }
+kbd {
+  font: inherit;
+  font-size: .78em;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 0 .3em;
+  background: var(--card);
+}
+
+.empty { color: var(--ink-soft); }
+
+@media (max-width: 30rem) {
+  .prompt { font-size: 1.45rem; }
+  .stats { gap: 1.1rem; }
+  .stats dd { font-size: 1.1rem; }
+}

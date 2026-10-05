@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>אנגלית — מילים ואיות</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Frank+Ruhl+Libre:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <h1 class="brand">אנגלית: אוצר מילים <span>&amp;</span> איות</h1>
+      <dl class="stats">
+        <div><dt>שאלות</dt><dd id="stat-asked">0</dd></div>
+        <div><dt>אחוז הצלחה</dt><dd id="stat-rate">—</dd></div>
+        <div><dt>פריטים שנשלטו</dt><dd id="stat-mastered">0</dd></div>
+      </dl>
+      <div class="mastery-bar"><span id="mastery-fill"></span></div>
+    </header>
+
+    <main class="card" id="card" aria-live="polite">
+      <p class="kicker"><span id="kicker-type"></span><span class="pips" id="pips" title="דרגת שליטה בשאלה הזאת"></span></p>
+      <h2 class="prompt" id="prompt">טוען…</h2>
+      <p class="gloss" id="gloss" hidden></p>
+      <div class="options" id="options"></div>
+      <p class="feedback" id="feedback" hidden></p>
+      <p class="pattern" id="pattern" dir="ltr" lang="en" hidden></p>
+      <p class="note" id="note" hidden></p>
+      <button class="next" id="next" hidden>לשאלה הבאה <span aria-hidden="true">←</span></button>
+    </main>
+
+    <footer class="controls">
+      <fieldset class="modes">
+        <legend>סוגי שאלות</legend>
+        <label><input type="checkbox" id="mode-he-en" checked> עברית ← אנגלית</label>
+        <label><input type="checkbox" id="mode-en-he" checked> אנגלית ← עברית</label>
+        <label><input type="checkbox" id="mode-spelling" checked> איות באנגלית</label>
+      </fieldset>
+      <button class="reset" id="reset" type="button">איפוס התקדמות</button>
+      <p class="tip">אפשר לענות גם במקשים <kbd>1</kbd>–<kbd>4</kbd>, ולהמשיך ב־<kbd>Enter</kbd>.</p>
+    </footer>
+  </div>
+
+  <script src="js/data-vocab.js"></script>
+  <script src="js/data-spelling.js"></script>
+  <script src="js/scheduler.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
