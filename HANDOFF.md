@@ -11,7 +11,7 @@ Everything asked for is built, deployed, and verified in a real browser.
   enabled via the API (no workflow file, so no `workflow` token scope needed).
   Every push republishes; a build takes under a minute.
 * Working tree is clean and pushed. Three commits: initial, the quiz, the PWA.
-* `node tests/run-tests.js` (or `npm test`) — 44 checks, all passing.
+* `node tests/run-tests.js` (or `npm test`) — 47 checks, all passing.
 * A `python3 -m http.server 8777` is still running in the background from this
   session (PID was 81885). Kill it when convenient; it only serves local dev.
 
@@ -28,8 +28,8 @@ toggleable in the footer:
 | `spelling` | `איך כותבים את המילה ”נֶסֶסֶרִי“` | four English spellings |
 
 75 vocabulary pairs and 114 spelling items → 264 cards (each vocabulary direction
-is its own card). The material is gated into sections: 8 for vocabulary (the
-semantic groups) and 14 for spelling (8 beginner phonics sections, then 6 from
+is its own card). The material is gated into sections: 18 for vocabulary (the
+semantic groups, split into 4-5 word chunks) and 14 for spelling (8 beginner phonics sections, then 6 from
 the advanced bank). Each track advances independently.
 
 ## Decisions worth not relitigating
@@ -76,8 +76,19 @@ These came out of review during the session; changing them would undo the point.
    direction waits forever for a section that cannot complete. Unlocking is
    one-way on purpose. Cleared sections keep ~25% of the draw, picked in two
    stages (bucket first, then card) so the ratio does not drift as sections
-   accumulate. `ADVANCE_MASTERY` (3) is deliberately below the scheduler's
+   accumulate. `ADVANCE_MASTERY` (2) is deliberately below the scheduler's
    `MASTERED_AT` (4): one is a reachable gate, the other is the badge on screen.
+9. **Sections stay roughly the same size, and the gate stays cheap.** First cut
+   used whole semantic groups for vocabulary, so `חפצים בבית` was 32 cards
+   against 8 per spelling section. The scheduler draws about in proportion to
+   pool size, so that one section ate most questions while spelling crawled —
+   first level-up past question 200, measured. A section that never ends also
+   pins the draw to the same cards, so ”stuck on a level“ and ”same questions
+   over and over“ were the same defect. Keep sections near each other in size
+   (a test caps the spread) and keep `ADVANCE_MASTERY` low.
+10. **The cooldown needs a floor.** `min(6, pool/4)` gave a cooldown of 2 on an
+   eight-card section, so a word came back almost immediately. It is now floored
+   at 4 and capped below the pool size.
 
 
 ## The adaptive scheduler
@@ -102,10 +113,10 @@ manifest.webmanifest  name, colors, 192/512/maskable icons
 sw.js                 offline cache: serve from cache, refresh in background
 icons/                favicons 16/32, apple-touch 180, 192/512, 512 maskable
 css/style.css         light/dark, RTL-aware
-js/data-vocab.js      75 pairs, grouped for distractors
+js/data-vocab.js      75 pairs; group = distractors, section = curriculum chunk
 js/sections.js        ordered sections per track (the curriculum)
 js/data-spelling.js   114 items: he, translit, en, wrong[3], pattern, note, focus, section
-js/scheduler.js       weighted picker, mastery, persistence
+js/scheduler.js       weighted picker, mastery, cooldown, persistence
 js/curriculum.js      section gate, advancement, review mix
 js/questions.js       card building, prompts, pronunciation notes, shuffling
 js/app.js             DOM, feedback, keyboard, localStorage
@@ -115,7 +126,10 @@ tests/run-tests.js    data integrity + scheduler behaviour + bidi guards
 ## Gotchas
 
 * `sw.js` is stale-while-revalidate, so a deploy lands on the **second** load.
-  Hard-refresh twice when checking a change on the live site.
+  Hard-refresh twice when checking a change on the live site. Inside the
+  installed app there is no address bar to do that with, so the footer has a
+  ”בדיקת עדכון“ button: it messages the service worker, which drops every cache
+  and refetches the shell, then reloads. Bump `CACHE` in `sw.js` on each deploy.
 * Service workers need HTTPS or `localhost`; from `file://` the page still works,
   it just won't install or cache.
 * iOS caches `apple-touch-icon` aggressively — remove and re-add the home-screen

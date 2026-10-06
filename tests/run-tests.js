@@ -121,17 +121,35 @@ SEC.TRACKS.forEach(function (t) {
 ok('לכל פריט איות פרק מוכר', SPELLING.every(function (x) {
   return sectionIds['spelling/' + x.section];
 }));
-ok('לכל קבוצת אוצר מילים פרק מוכר', VOCAB.every(function (v) {
-  return sectionIds['vocab/' + v.group];
+ok('לכל פריט אוצר מילים פרק מוכר', VOCAB.every(function (v) {
+  return sectionIds['vocab/' + v.section];
 }));
+/* group הוא מאגר המסיחים הסמנטי, section הוא יחידת הלימוד. הפיצול של
+   אוצר המילים לפרקים קטנים אינו רשאי לגעת במסיחים. */
+ok('פיצול הפרקים לא פגע בקבוצות המסיחים', VOCAB.every(function (v) { return !!v.group; }));
 ok('אין פרק ריק', SEC.TRACKS.every(function (t) {
   return t.sections.every(function (x) {
     return cards.some(function (c) {
-      return (c.type === 'spelling' ? c.item.section : c.item.group) === x.id &&
-        (c.type === 'spelling') === (t.id === 'spelling');
+      return c.item.section === x.id && (c.type === 'spelling') === (t.id === 'spelling');
     });
   });
 }));
+/* פרק גדול נתקע: ”חפצים בבית“ היה 32 קלפים מול 8 בכל פרק איות, ושליטה
+   בו דרשה מאות שאלות. שום פרק לא יהיה גדול בהרבה מאחיו. */
+ok('אין פרק גדול בהרבה מהאחרים', SEC.TRACKS.every(function (t) {
+  var sizes = t.sections.map(function (x) {
+    return cards.filter(function (c) {
+      return c.item.section === x.id && (c.type === 'spelling') === (t.id === 'spelling');
+    }).length;
+  });
+  return Math.max.apply(null, sizes) <= 12;
+}), SEC.TRACKS.map(function (t) {
+  return t.id + ' max ' + Math.max.apply(null, t.sections.map(function (x) {
+    return cards.filter(function (c) {
+      return c.item.section === x.id && (c.type === 'spelling') === (t.id === 'spelling');
+    }).length;
+  }));
+}).join(', '));
 /* צירוף לטיני בתוך משפט עברי מתהפך, ולכן ההדגמה האנגלית חיה בשדה tag
    הנפרד ומוצגת בשורה משלה. בשם הפרק מותרת אות בודדת בלבד. */
 ok('שם הפרק אינו נושא צירוף לטיני', SEC.TRACKS.every(function (t) {
@@ -147,8 +165,8 @@ ok('בתחילה פתוח פרק אחד בכל מסלול', SEC.TRACKS.every(fun
   return c0.cur.unlockedCount(t.id) === 1;
 }));
 ok('רק הפרק הראשון בבריכה', cards.filter(c0.cur.isOpen).every(function (c) {
-  var sid = c.type === 'spelling' ? c.item.section : c.item.group;
-  return sid === 'object' || sid === 'oo-ee';
+  var sid = c.item.section;
+  return sid === 'object-1' || sid === 'oo-ee';
 }));
 var drawn = {};
 for (var d = 0; d < 400; d++) { drawn[c0.cur.pick(function () { return true; }).id] = true; }
@@ -204,7 +222,7 @@ ok('פרק שנסגר חוזר כרבע מהזמן', share > 0.19 && share < 0.3
    לא ייתקע בפרק שלעולם לא יושלם. */
 var c4 = curriculum(5);
 var heEnOnly = function (c) { return c.type === 'vocab-he-en'; };
-cards.filter(function (c) { return c.type === 'vocab-he-en' && c.item.group === 'object'; })
+cards.filter(function (c) { return c.type === 'vocab-he-en' && c.item.section === 'object-1'; })
   .forEach(function (c) { for (var i = 0; i < 3; i++) { c4.sched.record(c.id, true); } });
 c4.cur.sync(heEnOnly);
 ok('כיוון שאלה כבוי אינו נועל את המסלול', c4.cur.unlockedCount('vocab') === 2);
@@ -219,7 +237,15 @@ ok('מצב שמור פגום אינו נועל את התלמיד', (function () 
     tracks: SEC.TRACKS, cards: cards, scheduler: c1.sched,
     state: { unlocked: { spelling: 999, vocab: 0 } }
   });
-  return back.unlockedCount('spelling') === 14 && back.unlockedCount('vocab') === 1;
+  return back.unlockedCount('spelling') === SEC.TRACKS[1].sections.length &&
+    back.unlockedCount('vocab') === 1;
+})());
+/* צינון של שתי שאלות בבריכה של שמונה החזיר את אותה מילה כמעט מיד. */
+ok('הצינון אינו מתכווץ בבריכה קטנה', (function () {
+  var s8 = sch.createScheduler({ cards: cards.slice(0, 8) });
+  var s40 = sch.createScheduler({ cards: cards.slice(0, 40) });
+  return s8.cooldownFor(8) >= 4 && s8.cooldownFor(8) < 8 && s40.cooldownFor(40) === 6 &&
+    s8.cooldownFor(2) < 2;
 })());
 ok('איפוס מחזיר לפרק הראשון', (function () {
   c1.cur.reset();

@@ -41,8 +41,11 @@
       return Math.max(w, MIN_WEIGHT);
     }
 
+    /* בבריכה קטנה ”רבע מהמאגר“ מתכווץ לכלום: שמונה קלפים נתנו צינון של
+       שתי שאלות, ואותה מילה חזרה כמעט מיד. רצפה של ארבע, ותמיד פחות
+       מגודל הבריכה — אחרת כל הקלפים מצוננים יחד והצינון מאבד משמעות. */
     function cooldownFor(poolSize) {
-      return Math.min(6, Math.floor(poolSize / 4));
+      return Math.max(0, Math.min(poolSize - 1, Math.min(6, Math.max(4, Math.floor(poolSize / 4)))));
     }
 
     function next(filter) {
@@ -115,6 +118,7 @@
       stats: stats,
       masteryOf: masteryOf,
       weightOf: function (id) { return weightOf(id, cooldownFor(cards.length)); },
+      cooldownFor: cooldownFor,
       exportState: exportState,
       reset: reset,
       constants: { MAX_MASTERY: MAX_MASTERY, DECAY: DECAY, MASTERED_AT: MASTERED_AT }

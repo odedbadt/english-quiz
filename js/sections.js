@@ -6,20 +6,34 @@
    tag  — ההדגמה האנגלית. היא חיה בשדה משלה ומוצגת בשורה משמאל לימין,
           ולעולם אינה נתפרת לתוך משפט עברי.
 
-   שיוך פריט לפרק: קלף איות לפי item.section, קלף אוצר מילים לפי
-   item.group — כלומר הקבוצה הסמנטית שכבר שימשה לבחירת מסיחים. */
+   שיוך פריט לפרק: item.section, בשני המסלולים.
+
+   אוצר המילים מחולק לפרקים של ארבעה-חמישה פריטים ולא לפי קבוצה שלמה.
+   הקבוצה ”חפצים בבית“ לבדה הייתה 32 קלפים, פי ארבעה מכל פרק איות, וכך
+   התלמיד נתקע בפרק אחד למאות שאלות. group נשאר מה שהיה — מאגר המסיחים
+   הסמנטי — ואינו מושפע מהחלוקה הזאת. */
 (function (root) {
   'use strict';
 
   var VOCAB_SECTIONS = [
-    { id: 'object',   name: 'חפצים בבית',      tag: 'key · towel · fork' },
-    { id: 'place',    name: 'בית ועיר',        tag: 'window · bridge' },
-    { id: 'clothing', name: 'לבוש',            tag: 'shirt · coat · hat' },
-    { id: 'nature',   name: 'טבע ומזג אוויר',  tag: 'rain · forest · lake' },
-    { id: 'animal',   name: 'חיות',            tag: 'bird · horse · fox' },
-    { id: 'person',   name: 'אנשים ומקצועות',  tag: 'doctor · teacher' },
-    { id: 'verb',     name: 'פעלים',           tag: 'to explain · to hide' },
-    { id: 'adj',      name: 'שמות תואר',       tag: 'famous · empty · wet' }
+    { id: 'object-1',   name: 'חפצים בבית א', tag: 'card · key · towel' },
+    { id: 'object-2',   name: 'חפצים בבית ב', tag: 'fork · knife · plate' },
+    { id: 'object-3',   name: 'חפצים בבית ג', tag: 'brush · soap · comb' },
+    { id: 'object-4',   name: 'חפצים בבית ד', tag: 'notebook · newspaper · wallet' },
+    { id: 'place-1',    name: 'בית ועיר א', tag: 'window · door · kitchen' },
+    { id: 'place-2',    name: 'בית ועיר ב', tag: 'traffic light · office · library' },
+    { id: 'clothing-1', name: 'לבוש א', tag: 'shoe · shirt · trousers' },
+    { id: 'clothing-2', name: 'לבוש ב', tag: 'hat · belt · glove' },
+    { id: 'nature-1',   name: 'טבע ומזג אוויר א', tag: 'rain · snow · cloud' },
+    { id: 'nature-2',   name: 'טבע ומזג אוויר ב', tag: 'forest · desert · valley' },
+    { id: 'animal-1',   name: 'חיות א', tag: 'bird · cat · horse' },
+    { id: 'animal-2',   name: 'חיות ב', tag: 'ant · elephant · fox' },
+    { id: 'person-1',   name: 'אנשים ומקצועות א', tag: 'doctor · teacher · carpenter' },
+    { id: 'person-2',   name: 'אנשים ומקצועות ב', tag: 'policeman · neighbour · guest' },
+    { id: 'verb-1',     name: 'פעלים א', tag: 'to explain · to decide · to invite' },
+    { id: 'verb-2',     name: 'פעלים ב', tag: 'to borrow · to fix · to guess' },
+    { id: 'adj-1',      name: 'שמות תואר א', tag: 'dangerous · difficult · enormous' },
+    { id: 'adj-2',      name: 'שמות תואר ב', tag: 'ordinary · empty · wet' }
   ];
 
   /* הסדר הוא סדר הלימוד: תחילה צליל ואיות בסיסיים, ואחריהם המאגר המתקדם.

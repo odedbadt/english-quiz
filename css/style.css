@@ -147,6 +147,20 @@ body {
 
 .kicker-section { color: var(--ink-soft); }
 
+.actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.refresh {
+  font: inherit;
+  padding: .45rem .9rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.refresh:hover:not(:disabled) { color: var(--ink); border-color: var(--ink-soft); }
+.refresh:disabled { opacity: .55; cursor: default; }
+.appver { margin: .5rem 0 0; font-size: .85rem; color: var(--ink-soft); }
+
 /* הודעת פתיחת פרק: מופיעה אחרי תשובה, ולכן בולטת יותר מההסבר. */
 .unlocked {
   margin: .7rem 0 0;

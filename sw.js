@@ -1,7 +1,7 @@
 /* Service worker: שומר את האפליקציה במטמון כדי שתעבוד גם בלי רשת.
    האסטרטגיה היא "הגש מהמטמון ורענן ברקע" — הדף נפתח מיד, והגרסה
    החדשה נכנסת לתוקף בטעינה הבאה. */
-var CACHE = 'quiz-shell-v2';
+var CACHE = 'quiz-shell-v3';
 var SHELL = [
   './',
   'index.html',
@@ -35,6 +35,19 @@ self.addEventListener('activate', function (e) {
       }));
     }).then(function () { return self.clients.claim(); })
   );
+});
+
+/* הדף מבקש עדכון מיידי: מוחקים את המטמון ומושכים מחדש מהרשת.
+   בלי זה הדרך היחידה לעדכן אפליקציה מותקנת היא רענון כפול, שאינו
+   זמין כשהיא פתוחה כאפליקציה ולא בדפדפן. */
+self.addEventListener('message', function (e) {
+  if (!e.data || e.data.type !== 'refresh') { return; }
+  var reply = e.ports && e.ports[0];
+  caches.keys()
+    .then(function (keys) { return Promise.all(keys.map(function (k) { return caches.delete(k); })); })
+    .then(function () { return caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }); })
+    .then(function () { if (reply) { reply.postMessage({ ok: true }); } })
+    .catch(function (err) { if (reply) { reply.postMessage({ ok: false, error: String(err) }); } });
 });
 
 self.addEventListener('fetch', function (e) {

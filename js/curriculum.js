@@ -12,11 +12,14 @@
   'use strict';
 
   var REVIEW_SHARE = 0.25;   // חלקם של פרקים שנסגרו בהגרלה
-  var ADVANCE_MASTERY = 3;   // שליטה שנחשבת ”יודע“ לצורך מעבר פרק
+  var ADVANCE_MASTERY = 2;   // שליטה שנחשבת ”יודע“ לצורך מעבר פרק
   var ADVANCE_RATIO = 0.8;   // איזה חלק מהפרק צריך להגיע לשם
 
   /* ADVANCE_MASTERY נמוך מ-MASTERED_AT שבמתזמן (4) בכוונה: הראשון הוא
-     תנאי מעבר וצריך להיות בר-השגה, השני הוא תג ההישג שבראש המסך. */
+     תנאי מעבר וצריך להיות בר-השגה, השני הוא תג ההישג שבראש המסך.
+     הוא הורד מ-3 ל-2 אחרי מדידה: בפועל פרק ראשון נמשך מאתיים שאלות
+     ויותר, והתלמיד לא ראה התקדמות. פרק שאינו נגמר גם מקבע את הבריכה
+     על אותם קלפים — ”נתקע“ ו”חוזר על עצמו“ הם אותה תקלה. */
 
   function createCurriculum(opts) {
     opts = opts || {};
@@ -36,9 +39,7 @@
 
     function trackOf(card) { return card.type === 'spelling' ? 'spelling' : 'vocab'; }
 
-    function sectionIdOf(card) {
-      return card.type === 'spelling' ? card.item.section : card.item.group;
-    }
+    function sectionIdOf(card) { return card.item.section; }
 
     function trackDef(id) {
       for (var i = 0; i < tracks.length; i++) { if (tracks[i].id === id) { return tracks[i]; } }

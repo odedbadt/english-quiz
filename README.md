@@ -27,7 +27,7 @@ The material is a curriculum, not a flat pool. Each track advances on its own:
 
 | track | sections | ordering |
 | --- | --- | --- |
-| `vocab` | 8 | the semantic groups, in data order |
+| `vocab` | 18 | the semantic groups, split into 4-5 word chunks |
 | `spelling` | 14 | 8 beginner phonics sections, then 6 from the advanced bank |
 
 The spelling track starts on sound-and-letter basics — long `oo`/`ee`, the silent
@@ -36,11 +36,20 @@ silent `gh`, and choosing between `c`, `s` and `k` — and only then reaches the
 advanced bank (doubled consonants, endings, swallowed vowels, silent letters).
 
 **Advancing.** A section opens the next one when **80% of its cards reach mastery
-3**. That is roughly 25-30 correct answers for an eight-card section. Coverage is
-counted only over question types that are currently switched on, so a pupil who
-turns off a direction is not stranded in a section that can never complete.
-Unlocking is one-way: a later slip does not re-lock a section, or a single wrong
-answer would throw the pupil backwards mid-chapter.
+2**. Coverage is counted only over question types that are currently switched on,
+so a pupil who turns off a direction is not stranded in a section that can never
+complete. Unlocking is one-way: a later slip does not re-lock a section, or a
+single wrong answer would throw the pupil backwards mid-chapter.
+
+Sections are kept to a similar size on purpose. The first version grouped
+vocabulary by whole semantic group, which made `חפצים בבית` 32 cards against
+8 for every spelling section — and because the scheduler draws roughly in
+proportion to pool size, most questions came from that one oversized section
+while the spelling track crawled. Simulated against the real modules, the first
+level-up took **over 200 questions**; a section that never ends also pins the
+draw to the same handful of cards, so *stuck* and *repetitive* were one bug, not
+two. Even sections plus the lower mastery bar bring that to **under 50**, and
+the number of distinct cards seen over a session goes up rather than down.
 
 **Review.** A cleared section keeps coming back, at about a quarter of the draw.
 The pick is two-stage — first the bucket (current section vs. everything cleared),

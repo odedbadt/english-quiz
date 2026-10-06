@@ -24,6 +24,8 @@
     mastered: document.getElementById('stat-mastered'),
     masteryFill: document.getElementById('mastery-fill'),
     reset: document.getElementById('reset'),
+    refresh: document.getElementById('refresh'),
+    appver: document.getElementById('appver'),
     modes: {
       'vocab-he-en': document.getElementById('mode-he-en'),
       'vocab-en-he': document.getElementById('mode-en-he'),
@@ -349,6 +351,42 @@
       if (!answered || !current) { nextQuestion(); }
     });
   });
+
+  /* עדכון יזום. באפליקציה מותקנת אין שורת כתובת ואין רענון כפול, ולכן
+     המטמון הישן יכול להישאר תקוע; הכפתור מוחק אותו ומושך מחדש.
+     ה-service worker מתעדכן גם הוא, שאם לא כן הוא יגיש שוב את הישן. */
+  function refreshApp() {
+    el.refresh.disabled = true;
+    setText(el.appver, 'מחפש עדכון…');
+
+    var done = function (msg) {
+      setText(el.appver, msg);
+      el.refresh.disabled = false;
+    };
+
+    if (!('serviceWorker' in navigator)) {
+      location.reload();
+      return;
+    }
+
+    navigator.serviceWorker.getRegistration().then(function (reg) {
+      if (!reg) { location.reload(); return; }
+      return reg.update().then(function () {
+        return new Promise(function (resolve) {
+          var ch = new MessageChannel();
+          var timer = setTimeout(function () { resolve({ ok: false }); }, 8000);
+          ch.port1.onmessage = function (ev) { clearTimeout(timer); resolve(ev.data || {}); };
+          var sw = reg.active || navigator.serviceWorker.controller;
+          if (!sw) { clearTimeout(timer); resolve({ ok: false }); return; }
+          sw.postMessage({ type: 'refresh' }, [ch.port2]);
+        });
+      }).then(function (res) {
+        if (res && res.ok) { location.reload(); } else { done('לא הצלחנו לרענן. נסו שוב מאוחר יותר.'); }
+      });
+    }).catch(function () { done('לא הצלחנו לרענן. נסו שוב מאוחר יותר.'); });
+  }
+
+  el.refresh.addEventListener('click', refreshApp);
 
   el.reset.addEventListener('click', function () {
     if (!window.confirm('לאפס את כל ההתקדמות ולהתחיל מחדש?')) { return; }
