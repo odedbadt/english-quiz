@@ -46,11 +46,33 @@
     return out;
   }
 
+  /* בכ"פ בראש מילה עברית נקראות דגושות מתוך הרגל, גם כשאין שם דגש, ואילו
+     האנגלית אינה מתחייבת לכך. לכן הגה הפותח באות רפה נקרא שגוי —
+     "פְרֶנְד" כ"פּרנד" ו"פוֹרִין" כ"פּורין" — וצמודה לו הערת הגייה.
+     ההדגמה עברית בלבד: ציון האות האנגלית היה חושף את האיות הנשאל. */
+  var SOFT_LEAD = {
+    'ב': 'הב׳ כאן רפה — כמו ב״שובר״, לא כמו ב״בית״.',
+    'כ': 'הכ׳ כאן רפה — כמו ב״מכתב״, לא כמו ב״כלב״.',
+    'פ': 'הפ׳ כאן רפה — כמו ב״טלפון״, לא כמו ב״פיל״.'
+  };
+
+  function softLeadNote(word) {
+    var note = SOFT_LEAD[word.charAt(0)];
+    if (!note) { return ''; }
+    /* סימני הניקוד של האות הראשונה, בכל סדר שהוא; דגש בתוכם מבטל את ההערה. */
+    for (var i = 1; i < word.length; i++) {
+      var cp = word.charCodeAt(i);
+      if (cp < 0x0591 || cp > 0x05c7) { break; }
+      if (word.charAt(i) === '\u05bc') { return ''; }
+    }
+    return note;
+  }
+
   function makeQuestion(card, ctx) {
     var random = (ctx && ctx.random) || Math.random;
     var vocab = (ctx && ctx.vocab) || [];
     var item = card.item;
-    var q = { id: card.id, type: card.type, note: '', hint: '' };
+    var q = { id: card.id, type: card.type, note: '', hint: '', meaning: '', say: '' };
     var answer, choices;
 
     if (card.type === TYPES.VOCAB_HE_EN) {
@@ -74,11 +96,17 @@
       q.optionLang = 'he';
       choices = pickVocabDistractors(item, vocab, 'he', random, 3).concat([answer]);
     } else {
+      /* השאלה היא ההגה באותיות עבריות, לא המשמעות: כך נבחן האיות בלבד
+         ולא גם התרגום. המשמעות נלווית כהקשר (q.meaning) ואינה הנשאלת.
+         הנפילה ל-he היא רשת ביטחון לפריט שנוסף בלי translit; הבדיקות
+         דורשות את השדה. */
       answer = item.en;
-      q.promptHead = 'תאיית את המילה';
-      q.promptWord = item.he;
+      q.promptHead = 'איך כותבים את המילה';
+      q.promptWord = item.translit || item.he;
       q.promptWordLang = 'he';
       q.promptTail = '';
+      q.meaning = item.he;
+      q.say = softLeadNote(q.promptWord);
       q.note = item.note || '';
       q.optionDir = 'ltr';
       q.optionLang = 'en';
@@ -101,7 +129,9 @@
   root.SP.buildCards = buildCards;
   root.SP.makeQuestion = makeQuestion;
   root.SP.shuffle = shuffle;
+  root.SP.softLeadNote = softLeadNote;
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { TYPES: TYPES, buildCards: buildCards, makeQuestion: makeQuestion, shuffle: shuffle };
+    module.exports = { TYPES: TYPES, buildCards: buildCards, makeQuestion: makeQuestion,
+      shuffle: shuffle, softLeadNote: softLeadNote };
   }
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -28,16 +28,19 @@
         <div><dt>פריטים שנשלטו</dt><dd id="stat-mastered">0</dd></div>
       </dl>
       <div class="mastery-bar"><span id="mastery-fill"></span></div>
+      <div class="tracks" id="tracks"></div>
     </header>
 
     <main class="card" id="card" aria-live="polite">
-      <p class="kicker"><span id="kicker-type"></span><span class="pips" id="pips" title="דרגת שליטה בשאלה הזאת"></span></p>
+      <p class="kicker"><span id="kicker-type"></span><span class="kicker-section" id="kicker-section"></span><span class="pips" id="pips" title="דרגת שליטה בשאלה הזאת"></span></p>
       <h2 class="prompt" id="prompt">טוען…</h2>
       <p class="gloss" id="gloss" hidden></p>
+      <p class="say" id="say" hidden></p>
       <div class="options" id="options"></div>
       <p class="feedback" id="feedback" hidden></p>
       <p class="pattern" id="pattern" dir="ltr" lang="en" hidden></p>
       <p class="note" id="note" hidden></p>
+      <p class="unlocked" id="unlocked" hidden></p>
       <button class="next" id="next" hidden>לשאלה הבאה <span aria-hidden="true">←</span></button>
     </main>
 
@@ -55,7 +58,9 @@
 
   <script src="js/data-vocab.js"></script>
   <script src="js/data-spelling.js"></script>
+  <script src="js/sections.js"></script>
   <script src="js/scheduler.js"></script>
+  <script src="js/curriculum.js"></script>
   <script src="js/questions.js"></script>
   <script src="js/app.js"></script>
   <script>

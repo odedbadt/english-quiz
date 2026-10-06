@@ -1,7 +1,7 @@
 /* Service worker: שומר את האפליקציה במטמון כדי שתעבוד גם בלי רשת.
    האסטרטגיה היא "הגש מהמטמון ורענן ברקע" — הדף נפתח מיד, והגרסה
    החדשה נכנסת לתוקף בטעינה הבאה. */
-var CACHE = 'quiz-shell-v1';
+var CACHE = 'quiz-shell-v2';
 var SHELL = [
   './',
   'index.html',
@@ -9,7 +9,9 @@ var SHELL = [
   'css/style.css',
   'js/data-vocab.js',
   'js/data-spelling.js',
+  'js/sections.js',
   'js/scheduler.js',
+  'js/curriculum.js',
   'js/questions.js',
   'js/app.js',
   'icons/icon-192.png',

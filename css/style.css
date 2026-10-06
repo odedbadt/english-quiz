@@ -117,6 +117,46 @@ body {
 }
 .pips i.on { background: var(--accent); }
 
+/* לוח המסלולים: היכן התלמיד נמצא בכל מסלול, וכמה נותר עד הפרק הבא. */
+.tracks { margin: .85rem 0 0; display: grid; gap: .5rem; }
+.track-head {
+  display: flex;
+  align-items: baseline;
+  gap: .45rem;
+  flex-wrap: wrap;
+  font-size: .85rem;
+  color: var(--ink-soft);
+}
+.track-head b { color: var(--ink); font-weight: 600; }
+.track-section { color: var(--ink); }
+.track-head .tag { font-weight: 500; font-size: .8rem; opacity: .75; }
+.track-count { margin-inline-start: auto; font-variant-numeric: tabular-nums; }
+.track-bar {
+  margin-top: .28rem;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.track-bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width .3s ease;
+}
+
+.kicker-section { color: var(--ink-soft); }
+
+/* הודעת פתיחת פרק: מופיעה אחרי תשובה, ולכן בולטת יותר מההסבר. */
+.unlocked {
+  margin: .7rem 0 0;
+  padding: .6rem .8rem;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 600;
+}
+
 .prompt {
   font-family: "Frank Ruhl Libre", "Heebo", serif;
   font-size: 1.75rem;
@@ -126,6 +166,9 @@ body {
 }
 
 .gloss { margin: .55rem 0 0; color: var(--ink-soft); }
+
+/* הערת הגייה: נלווית לשאלה, ולכן שקטה יותר מהמשמעות. */
+.say { margin: .3rem 0 0; color: var(--ink-soft); font-size: .9rem; opacity: .85; }
 
 .lat {
   direction: ltr;

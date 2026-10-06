@@ -7,9 +7,13 @@
 
   var el = {
     kickerType: document.getElementById('kicker-type'),
+    kickerSection: document.getElementById('kicker-section'),
+    tracks: document.getElementById('tracks'),
+    unlocked: document.getElementById('unlocked'),
     pips: document.getElementById('pips'),
     prompt: document.getElementById('prompt'),
     gloss: document.getElementById('gloss'),
+    say: document.getElementById('say'),
     pattern: document.getElementById('pattern'),
     note: document.getElementById('note'),
     options: document.getElementById('options'),
@@ -35,6 +39,9 @@
   var cards = SP.buildCards(SP.VOCAB, SP.SPELLING);
   var saved = load();
   var sched = SP.createScheduler({ cards: cards, state: saved.progress });
+  var cur = SP.createCurriculum({
+    tracks: SP.TRACKS, cards: cards, scheduler: sched, state: saved.curriculum
+  });
   var enabled = saved.modes || { 'vocab-he-en': true, 'vocab-en-he': true, 'spelling': true };
   var current = null;      // { card, question }
   var answered = false;
@@ -51,6 +58,7 @@
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({
         progress: sched.exportState(),
+        curriculum: cur.exportState(),
         modes: enabled
       }));
     } catch (e) { /* מצב פרטי / אין מקום — פשוט לא שומרים */ }
@@ -58,6 +66,10 @@
 
   // ---------- עזר ----------
   function filter(card) { return !!enabled[card.type]; }
+
+  /* הסטטיסטיקה שבראש המסך נמדדת על החומר שנפתח בלבד. ספירה על כל
+     המאגר הייתה מציגה 0 מתוך מאות כבר בשאלה הראשונה. */
+  function openFilter(card) { return filter(card) && cur.isOpen(card); }
 
   function clear(node) { while (node.firstChild) { node.removeChild(node.firstChild); } }
 
@@ -101,11 +113,60 @@
 
   // ---------- תצוגה ----------
   function renderStats() {
-    var s = sched.stats(filter);
+    var s = sched.stats(openFilter);
     el.asked.textContent = s.asked;
     el.rate.textContent = s.asked ? Math.round(100 * s.right / s.asked) + '%' : '—';
     el.mastered.textContent = s.mastered + ' / ' + s.total;
     el.masteryFill.style.width = (s.total ? (100 * s.mastered / s.total) : 0) + '%';
+  }
+
+  /* לוח המסלולים: לכל מסלול פעיל, הפרק הנוכחי וכמה ממנו כבר נשלט. */
+  function renderTracks() {
+    clear(el.tracks);
+    SP.TRACKS.forEach(function (t) {
+      var idx = cur.unlockedCount(t.id) - 1;
+      var p = cur.progress(t.id, idx, filter);
+      if (!p.total) { return; }           // המסלול כבוי כרגע בהגדרות
+
+      var row = document.createElement('div');
+      row.className = 'track';
+
+      var head = document.createElement('div');
+      head.className = 'track-head';
+
+      var name = document.createElement('b');
+      name.textContent = t.name;
+      head.appendChild(name);
+
+      var sec = document.createElement('span');
+      sec.className = 'track-section';
+      appendMixed(sec, p.section.name);
+      head.appendChild(sec);
+
+      if (p.section.tag) {
+        var tag = document.createElement('span');
+        tag.className = 'lat tag';
+        tag.dir = 'ltr';
+        tag.lang = 'en';
+        tag.textContent = p.section.tag;
+        head.appendChild(tag);
+      }
+
+      var count = document.createElement('span');
+      count.className = 'track-count';
+      count.textContent = p.done + '/' + p.total + ' · פרק ' + (idx + 1) + ' מתוך ' + t.sections.length;
+      head.appendChild(count);
+
+      var bar = document.createElement('div');
+      bar.className = 'track-bar';
+      var fill = document.createElement('span');
+      fill.style.width = (p.total ? 100 * p.done / p.total : 0) + '%';
+      bar.appendChild(fill);
+
+      row.appendChild(head);
+      row.appendChild(bar);
+      el.tracks.appendChild(row);
+    });
   }
 
   function renderPips(cardId) {
@@ -121,19 +182,22 @@
   function renderEmpty() {
     current = null;
     el.kickerType.textContent = '';
+    clear(el.kickerSection);
     clear(el.pips);
     clear(el.prompt);
     el.prompt.textContent = 'בחרו לפחות סוג שאלות אחד כדי להתחיל.';
     el.prompt.className = 'prompt empty';
     el.gloss.hidden = true;
+    el.say.hidden = true;
     el.note.hidden = true;
+    el.unlocked.hidden = true;
     el.feedback.hidden = true;
     el.next.hidden = true;
     clear(el.options);
   }
 
   function nextQuestion() {
-    var card = sched.next(filter);
+    var card = cur.pick(filter);
     if (!card) { renderEmpty(); return; }
 
     var q = SP.makeQuestion(card, { vocab: SP.VOCAB });
@@ -141,6 +205,12 @@
     answered = false;
 
     el.kickerType.textContent = TYPE_LABEL[card.type];
+    clear(el.kickerSection);
+    var sec = cur.sectionOf(card);
+    if (sec) {
+      el.kickerSection.appendChild(document.createTextNode(' · '));
+      appendMixed(el.kickerSection, sec.name);
+    }
     renderPips(card.id);
 
     el.prompt.className = 'prompt';
@@ -151,12 +221,16 @@
       el.prompt.appendChild(document.createTextNode(' ' + q.promptTail));
     }
 
-    setMixedText(el.gloss, q.hint);
+    /* בשאלת איות המשמעות מוצגת כהקשר. היא אינה רמז: התשובה היא האיות,
+       וידיעת המשמעות אינה מצביעה על אף אחת מארבע האפשרויות. */
+    setMixedText(el.gloss, q.meaning ? 'במשמעות: ' + q.meaning : q.hint);
+    setText(el.say, q.say);
     el.pattern.hidden = true;
     el.note.hidden = true;
 
     el.feedback.hidden = true;
     el.feedback.className = 'feedback';
+    el.unlocked.hidden = true;
     el.next.hidden = true;
 
     clear(el.options);
@@ -239,7 +313,21 @@
     setMixedText(el.note, explain(q, correct));
 
     sched.record(current.card.id, correct);
+
+    /* הפרק נבדק אחרי כל תשובה, ולא רק בסופו: ברגע שרוב הפריטים נשלטים
+       הפרק הבא נפתח, והתלמיד רואה זאת מיד. */
+    var opened = cur.sync(filter);
+    if (opened.length) {
+      clear(el.unlocked);
+      opened.forEach(function (o, i) {
+        if (i) { el.unlocked.appendChild(document.createTextNode(' ')); }
+        appendMixed(el.unlocked, 'סיימת פרק ב' + o.track.name + ' — נפתח ”' + o.section.name + '“.');
+      });
+      el.unlocked.hidden = false;
+    }
+
     renderPips(current.card.id);
+    renderTracks();
     renderStats();
     save();
 
@@ -256,6 +344,7 @@
     box.addEventListener('change', function () {
       enabled[type] = box.checked;
       save();
+      renderTracks();
       renderStats();
       if (!answered || !current) { nextQuestion(); }
     });
@@ -264,7 +353,9 @@
   el.reset.addEventListener('click', function () {
     if (!window.confirm('לאפס את כל ההתקדמות ולהתחיל מחדש?')) { return; }
     sched.reset();
+    cur.reset();
     save();
+    renderTracks();
     renderStats();
     nextQuestion();
   });
@@ -285,6 +376,7 @@
     }
   });
 
+  renderTracks();
   renderStats();
   nextQuestion();
 })(window.SP);
