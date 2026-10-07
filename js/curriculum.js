@@ -12,7 +12,21 @@
   'use strict';
 
   var REVIEW_SHARE = 0.25;   // חלקם של פרקים שנסגרו בהגרלה
-  var ADVANCE_MASTERY = 2;   // שליטה שנחשבת ”יודע“ לצורך מעבר פרק
+  /* כמה פעמים צריך לענות נכון על קלף כדי שייחשב ”יודע“, לפי איך שהלך
+     בפרק הזה עד כה. מי שכמעט אינו טועה אינו צריך שלושה סיבובים על אותן
+     שמונה מילים — זו הדרך הבטוחה לשעמם אותו.
+
+     הסולם רשאי רק להקל, לעולם לא להחמיר. ניסיון להחמיר (שלוש שליטות
+     למי שמתקשה) נמדד והיה הרסני: תשובה שגויה מורידה שתי דרגות, ולכן
+     מתחת ל-67% דיוק השליטה נסוגה בממוצע מהר משהיא עולה, ודרגה 3 אינה
+     מושגת כמעט לעולם. בדיוק 0.5 הפרק הראשון קפץ מ-193 שאלות ל-432,
+     ובאלפיים שאלות נפתחו ארבעה פרקים במקום ארבעה-עשר. מי שמתקשה הוא
+     בדיוק מי שאסור להעניש בעוד חזרות. */
+  var MASTERY_BY_ACCURACY = [
+    { from: 0.9, mastery: 1 },
+    { from: 0.0, mastery: 2 }
+  ];
+  var ADVANCE_MASTERY = 2;   // ברירת מחדל לפרק שטרם נענתה בו שאלה
   var ADVANCE_RATIO = 0.8;   // איזה חלק מהפרק צריך להגיע לשם
 
   /* ADVANCE_MASTERY נמוך מ-MASTERED_AT שבמתזמן (4) בכוונה: הראשון הוא
@@ -91,11 +105,29 @@
       var pool = cards.filter(function (c) {
         return trackOf(c) === trackId && indexOf(c) === idx && (!enabled || enabled(c));
       });
+
+      var right = 0, seen = 0;
+      pool.forEach(function (c) {
+        var st = sched.cardState(c.id);
+        right += st.right; seen += st.seen;
+      });
+      var need = ADVANCE_MASTERY;
+      if (seen) {
+        var acc = right / seen;
+        for (var i = 0; i < MASTERY_BY_ACCURACY.length; i++) {
+          if (acc >= MASTERY_BY_ACCURACY[i].from) { need = MASTERY_BY_ACCURACY[i].mastery; break; }
+        }
+      }
+
       var done = 0;
       pool.forEach(function (c) {
-        if (sched.masteryOf(c.id) >= ADVANCE_MASTERY) { done += 1; }
+        if (sched.masteryOf(c.id) >= need) { done += 1; }
       });
-      return { total: pool.length, done: done, section: sectionAt(trackId, idx) };
+      return {
+        total: pool.length, done: done, need: need,
+        accuracy: seen ? right / seen : null,
+        section: sectionAt(trackId, idx)
+      };
     }
 
     function cleared(trackId, idx, enabled) {
@@ -135,7 +167,7 @@
       unlockedCount: function (trackId) { return unlocked[trackId]; },
       exportState: exportState,
       reset: reset,
-      constants: { REVIEW_SHARE: REVIEW_SHARE, ADVANCE_MASTERY: ADVANCE_MASTERY, ADVANCE_RATIO: ADVANCE_RATIO }
+      constants: { REVIEW_SHARE: REVIEW_SHARE, ADVANCE_MASTERY: ADVANCE_MASTERY, ADVANCE_RATIO: ADVANCE_RATIO, MASTERY_BY_ACCURACY: MASTERY_BY_ACCURACY }
     };
   }
 

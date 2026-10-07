@@ -11,7 +11,10 @@ Everything asked for is built, deployed, and verified in a real browser.
   enabled via the API (no workflow file, so no `workflow` token scope needed).
   Every push republishes; a build takes under a minute.
 * Working tree is clean and pushed. Three commits: initial, the quiz, the PWA.
-* `node tests/run-tests.js` (or `npm test`) — 47 checks, all passing.
+* `node tests/run-tests.js` (or `npm test`) — 50 checks, all passing.
+* `npm run measure` — not a test. Runs an agent over the real modules and
+  reports repetition and questions-per-level. Use it before changing any
+  scheduler or curriculum constant.
 * A `python3 -m http.server 8777` is still running in the background from this
   session (PID was 81885). Kill it when convenient; it only serves local dev.
 
@@ -86,9 +89,20 @@ These came out of review during the session; changing them would undo the point.
    pins the draw to the same cards, so ”stuck on a level“ and ”same questions
    over and over“ were the same defect. Keep sections near each other in size
    (a test caps the spread) and keep `ADVANCE_MASTERY` low.
-10. **The cooldown needs a floor.** `min(6, pool/4)` gave a cooldown of 2 on an
-   eight-card section, so a word came back almost immediately. It is now floored
-   at 4 and capped below the pool size.
+10. **The cooldown is an exclusion, not a penalty.** It was a weight multiplier
+   (×0.04), so the identical question could still follow itself — measured at
+   0.7 times per perfect run. A card inside the window is now removed from the
+   pool outright. The window is a flat 6 (capped below pool size, or every card
+   would be excluded at once); at 6 the repetition score hits zero *and*
+   questions-per-level drops, so there was no trade to make.
+11. **The accuracy ladder may only ever lower the bar.** A clean run through a
+   section needs one correct answer per card instead of two, which is what makes
+   graduation swift for a pupil who knows the material. Raising it for a pupil
+   who is struggling was tried and measured: a wrong answer costs two mastery
+   levels, so below ~67% accuracy mastery 3 is essentially unreachable — the
+   first level went from 193 questions to 432, and 2000 questions opened four
+   sections instead of fourteen. The one who is struggling is the last one to
+   punish with extra repetitions. A test enforces the ceiling.
 
 
 ## The adaptive scheduler
@@ -121,6 +135,7 @@ js/curriculum.js      section gate, advancement, review mix
 js/questions.js       card building, prompts, pronunciation notes, shuffling
 js/app.js             DOM, feedback, keyboard, localStorage
 tests/run-tests.js    data integrity + scheduler behaviour + bidi guards
+tests/measure.js      agent-driven measurement: repetition, questions per level
 ```
 
 ## Gotchas

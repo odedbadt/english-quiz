@@ -35,8 +35,12 @@ The spelling track starts on sound-and-letter basics — long `oo`/`ee`, the sil
 silent `gh`, and choosing between `c`, `s` and `k` — and only then reaches the
 advanced bank (doubled consonants, endings, swallowed vowels, silent letters).
 
-**Advancing.** A section opens the next one when **80% of its cards reach mastery
-2**. Coverage is counted only over question types that are currently switched on,
+**Advancing.** A section opens the next one when 80% of its cards reach a mastery
+that depends on how the pupil is doing in that section: **one** correct answer per
+card at 90% accuracy or better, **two** otherwise. The ladder may only ever lower
+the bar, never raise it — raising it was measured and it punishes exactly the
+pupil who is already struggling (a wrong answer costs two mastery levels, so
+above the default the requirement becomes practically unreachable). Coverage is counted only over question types that are currently switched on,
 so a pupil who turns off a direction is not stranded in a section that can never
 complete. Unlocking is one-way: a later slip does not re-lock a section, or a
 single wrong answer would throw the pupil backwards mid-chapter.
@@ -55,6 +59,13 @@ the number of distinct cards seen over a session goes up rather than down.
 The pick is two-stage — first the bucket (current section vs. everything cleared),
 then the scheduler picks within it — so the ratio stays fixed as sections pile up
 instead of review slowly swamping the current chapter.
+
+**Measuring it.** `npm run measure` runs an agent over the real modules and
+reports the two numbers that decide whether practice is boring: a repetition
+score (100 for the same question twice in a row, falling off with the gap) and
+the questions it costs to clear a level. A perfect agent currently scores **0**
+repetition and **11.6 questions per level**. Run it before touching a scheduler
+or curriculum constant.
 
 Section membership is data, not logic: a spelling item carries `section`, a
 vocabulary item reuses its `group`. `js/sections.js` holds the order and the

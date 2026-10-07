@@ -5,6 +5,7 @@
   "description": "Multiple-choice English vocabulary and spelling quiz for Hebrew speakers, with an adaptive question mix",
   "scripts": {
     "start": "python3 -m http.server 8777",
-    "test": "node tests/run-tests.js"
+    "test": "node tests/run-tests.js",
+    "measure": "node tests/measure.js"
   }
 }

@@ -252,6 +252,50 @@ ok('איפוס מחזיר לפרק הראשון', (function () {
   return c1.cur.unlockedCount('spelling') === 1;
 })());
 
+/* שתי התכונות שנמדדו מול ”סוכן מושלם“ (ראו tests/measure.js) ושאין
+   לאבד אותן: אין חזרה מיידית, והסולם רק מקל. */
+ok('אותה שאלה אינה חוזרת מיד', (function () {
+  var c = curriculum(21);
+  var all = function () { return true; };
+  var last = {}, minGap = Infinity;
+  for (var i = 1; i <= 600; i++) {
+    var card = c.cur.pick(all);
+    if (last[card.id]) { minGap = Math.min(minGap, i - last[card.id]); }
+    last[card.id] = i;
+    c.sched.record(card.id, true);
+    c.cur.sync(all);
+  }
+  return minGap >= 5;
+})(), 'מרווח מזערי בין שתי הופעות של אותו קלף');
+
+/* הסולם הזה רשאי רק להקל. החמרה נמדדה והייתה הרסנית למי שמתקשה:
+   תשובה שגויה מורידה שתי דרגות, ולכן מתחת ל-67% דיוק דרגה 3 אינה
+   מושגת כמעט לעולם, והפרק הראשון קפץ מ-193 שאלות ל-432. */
+ok('סולם הדיוק רק מקל', (function () {
+  var c = curriculum(22);
+  var ladder = c.cur.constants.MASTERY_BY_ACCURACY;
+  return ladder.length > 0 && ladder.every(function (step) {
+    return step.mastery <= c.cur.constants.ADVANCE_MASTERY;
+  });
+})());
+
+/* מי שעונה נכון עובר פרק מהר יותר ממי שטועה — זו כל מטרת הסולם. */
+ok('ריצה נקייה מסיימת פרק מהר יותר', (function () {
+  function cost(correctEvery) {
+    var c = curriculum(23);
+    var only = function (x) { return x.type === 'spelling'; };
+    var n = 0;
+    for (var i = 1; i <= 1500; i++) {
+      var card = c.cur.pick(only);
+      c.sched.record(card.id, i % correctEvery !== 0);
+      n = i;
+      if (c.cur.sync(only).length) { return n; }
+    }
+    return 1500;
+  }
+  return cost(1000) < cost(3);   // כמעט תמיד נכון מול טעות בכל שלישית
+})());
+
 console.log('\nתזמון אדפטיבי');
 var s = sch.createScheduler({ cards: cards, random: rng(11) });
 var target = 'v001:he-en';

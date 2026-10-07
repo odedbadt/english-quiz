@@ -41,20 +41,34 @@
       return Math.max(w, MIN_WEIGHT);
     }
 
-    /* בבריכה קטנה ”רבע מהמאגר“ מתכווץ לכלום: שמונה קלפים נתנו צינון של
-       שתי שאלות, ואותה מילה חזרה כמעט מיד. רצפה של ארבע, ותמיד פחות
-       מגודל הבריכה — אחרת כל הקלפים מצוננים יחד והצינון מאבד משמעות. */
+    /* חלון הצינון: כמה שאלות חייבות לעבור עד שקלף יוכל לחזור. נמדד מול
+       ”סוכן מושלם“ שעונה תמיד נכון — שש הוא הערך שבו החזרות המטרידות
+       (אותה שאלה שוב בתוך חמש שאלות) יורדות לאפס, והוא גם מקצר מעט את
+       הדרך לסיום פרק, כי הבחירה נדחפת אל קלפים שטרם נשאלו.
+       תמיד פחות מגודל הבריכה, אחרת כל הקלפים מצוננים יחד. */
+    var COOLDOWN = 6;
     function cooldownFor(poolSize) {
-      return Math.max(0, Math.min(poolSize - 1, Math.min(6, Math.max(4, Math.floor(poolSize / 4)))));
+      return Math.max(0, Math.min(poolSize - 1, COOLDOWN));
     }
 
     function next(filter) {
       var pool = filter ? cards.filter(filter) : cards.slice();
       if (!pool.length) { return null; }
       var cooldown = cooldownFor(pool.length);
+
+      /* הצינון היה קנס משקל בלבד, ולכן אותה שאלה בדיוק יכלה לבוא פעמיים
+         ברצף — הדבר המשעמם ביותר שהתרגול מסוגל לעשות. כאן הוא הדרה
+         מלאה: קלף שנשאל בתוך חלון הצינון כלל אינו מועמד. cooldownFor
+         מוגבל לגודל הבריכה פחות אחת, ולכן תמיד נשאר לפחות מועמד אחד. */
+      var fresh = pool.filter(function (c) {
+        var st = states[c.id];
+        return !st || st.lastIdx < 0 || qIndex - st.lastIdx >= cooldown;
+      });
+      if (fresh.length) { pool = fresh; }
+
       var total = 0, i, weights = [];
       for (i = 0; i < pool.length; i++) {
-        weights[i] = weightOf(pool[i].id, cooldown);
+        weights[i] = weightOf(pool[i].id, 0);   /* ההדרה כבר טיפלה בצינון */
         total += weights[i];
       }
       var roll = random() * total;
@@ -117,6 +131,10 @@
       record: record,
       stats: stats,
       masteryOf: masteryOf,
+      cardState: function (id) {
+        var st = stateOf(id);
+        return { m: st.m, right: st.right, wrong: st.wrong, seen: st.seen };
+      },
       weightOf: function (id) { return weightOf(id, cooldownFor(cards.length)); },
       cooldownFor: cooldownFor,
       exportState: exportState,
